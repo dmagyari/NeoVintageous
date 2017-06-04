@@ -851,6 +851,12 @@ def init_state(view, new_session=False):
     if not reset and (state.mode not in (modes.NORMAL, modes.UNKNOWN)):
         return
 
+    start_in_insert = state.settings.view['vintageous_start_in_insert_mode']
+    if start_in_insert:
+        view.window().run_command('_enter_insert_mode')
+        state.reset_command_data()
+        return
+
     # If we have no selections, add one.
     if len(state.view.sel()) == 0:
         state.view.sel().add(sublime.Region(0))
