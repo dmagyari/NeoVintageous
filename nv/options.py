@@ -136,7 +136,7 @@ _options = {
     'autoindent': BooleanViewOption('auto_indent', True),
     'belloff': StringOption('belloff', '', select=('', 'all')),
     'hlsearch': BooleanOption('hlsearch', True),
-    'ignorecase': BooleanOption('ignorecase', True),
+    'ignorecase': BooleanOption('ignorecase', False),
     'incsearch': BooleanOption('incsearch', True),
     'list': BooleanViewOption('draw_white_space', False, on='all', off='selection'),
     'magic': BooleanOption('magic', True),
