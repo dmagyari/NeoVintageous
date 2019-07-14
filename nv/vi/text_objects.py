@@ -39,17 +39,18 @@ from NeoVintageous.nv.utils import prev_non_blank
 from NeoVintageous.nv.utils import prev_non_ws
 from NeoVintageous.nv.vi.search import find_in_range
 from NeoVintageous.nv.vi.search import reverse_search_by_pt
+from NeoVintageous.nv.vi.search import find_last_in_range 
 from NeoVintageous.nv.vi.units import word_starts
 
 
-RX_ANY_TAG = r'</?([0-9A-Za-z-]+).*?>'
-RX_ANY_TAG_NAMED_TPL = r'</?({0}) *?.*?>'
-RXC_ANY_TAG = re.compile(r'</?([0-9A-Za-z]+).*?>')
+RX_ANY_TAG = r'</?([0-9A-Za-z-]+)[\w|\W]*?>'
+RX_ANY_TAG_NAMED_TPL = r'</?({0})[\w|\W]*?>'
+RXC_ANY_TAG = re.compile(r'</?([0-9A-Za-z]+)[\w|\W]*?>')
 # According to the HTML 5 editor's draft, only 0-9A-Za-z characters can be
 # used in tag names. TODO: This won't be enough in Dart Polymer projects,
 # for example.
-RX_ANY_START_TAG = r'<([0-9A-Za-z]+)(.*?)>'
-RX_ANY_END_TAG = r'</([0-9A-Za-z-]+).*?>'
+RX_ANY_START_TAG = r'<([0-9A-Za-z]+)([\w|\W]*?)>'
+RX_ANY_END_TAG = r'</([0-9A-Za-z-]+)[\w|\W]*?>'
 
 
 ANCHOR_NEXT_WORD_BOUNDARY = CLASS_WORD_START | CLASS_PUNCTUATION_START | CLASS_LINE_END
@@ -829,7 +830,7 @@ def next_end_tag(view, pattern=RX_ANY_TAG, start=0, end=-1):
 
 def previous_begin_tag(view, pattern, start=0, end=0):
     assert pattern, 'bad call'
-    region = reverse_search_by_pt(view, pattern, start, end, IGNORECASE)
+    region = find_last_in_range(view, pattern, start, end, IGNORECASE)
     if not region:
         return None, None, None
 
@@ -879,6 +880,7 @@ def find_containing_tag(view, start):
     #   tuple[None, None, None]
     closest_tag = get_closest_tag(view, start)
 
+
     if not closest_tag:
         return None, None, None
 
@@ -891,6 +893,7 @@ def find_containing_tag(view, start):
         search_args={'pattern': RX_ANY_TAG, 'start': start},
         restart_at=get_region_end
     )
+
 
     if not end_region:
         return None, None, None

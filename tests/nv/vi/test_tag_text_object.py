@@ -26,6 +26,8 @@ from NeoVintageous.nv.vi.text_objects import next_end_tag
 from NeoVintageous.nv.vi.text_objects import next_unbalanced_tag
 from NeoVintageous.nv.vi.text_objects import previous_begin_tag
 
+from NeoVintageous.nv.vi.text_objects import RX_ANY_TAG_NAMED_TPL
+
 
 test_data = namedtuple('test_data', 'content args expected msg')
 
@@ -35,14 +37,16 @@ TESTS_SEARCH_TAG_FORWARD = (
     test_data(content='<a>foo', args={'start': 1}, expected=(None, None, None), msg="don't find tag"),
     test_data(content='<a>foo</a>', args={'start': 1}, expected=(unittest.Region(6, 10), 'a', True), msg='find other tag'),  # noqa: E501
     test_data(content='<a hey="ho">foo', args={'start': 0}, expected=(unittest.Region(0, 12), 'a', False), msg='find tag with attributes'),  # noqa: E501
+    test_data(content='<a hey="ho"\n>foo', args={'start': 0}, expected=(unittest.Region(0, 13), 'a', False), msg='find tag with newline between attributes'),  # noqa: E501
 )
 
 TESTS_SEARCH_TAG_BACKWARD = (
-    test_data(content='<a>foo', args={'pattern': r'</?(a) *?.*?>', 'start': 0, 'end': 6}, expected=(unittest.Region(0, 3), 'a', True), msg='find tag'),  # noqa: E501
-    test_data(content='<a>foo', args={'pattern': r'</?(a) *?.*?>', 'start': 0, 'end': 0}, expected=(None, None, None), msg="don't find tag"),  # noqa: E501
-    test_data(content='</a>foo', args={'pattern': r'</?(a) *?.*?>', 'start': 0, 'end': 6}, expected=(unittest.Region(0, 4), 'a', False), msg='find a closing tag'),  # noqa: E501
-    test_data(content='<a>foo</a>', args={'pattern': r'</?(a) *?.*?>', 'start': 0, 'end': 5}, expected=(unittest.Region(0, 3), 'a', True), msg='find other tag'),  # noqa: E501
-    test_data(content='<a hey="ho">foo', args={'pattern': r'</?(a) *?.*?>', 'start': 0, 'end': 14}, expected=(unittest.Region(0, 12), 'a', True), msg='find tag with attributes'),  # noqa: E501
+    test_data(content='<a>foo', args={'pattern': RX_ANY_TAG_NAMED_TPL.format('a'), 'start': 0, 'end': 6}, expected=(unittest.Region(0, 3), 'a', True), msg='find tag'),  # noqa: E501
+    test_data(content='<a>foo', args={'pattern': RX_ANY_TAG_NAMED_TPL.format('a'), 'start': 0, 'end': 0}, expected=(None, None, None), msg="don't find tag"),  # noqa: E501
+    test_data(content='</a>foo', args={'pattern': RX_ANY_TAG_NAMED_TPL.format('a'), 'start': 0, 'end': 6}, expected=(unittest.Region(0, 4), 'a', False), msg='find a closing tag'),  # noqa: E501
+    test_data(content='<a>foo</a>', args={'pattern': RX_ANY_TAG_NAMED_TPL.format('a'), 'start': 0, 'end': 5}, expected=(unittest.Region(0, 3), 'a', True), msg='find other tag'),  # noqa: E501
+    test_data(content='<a\they="ho">foo', args={'pattern': RX_ANY_TAG_NAMED_TPL.format('a'), 'start': 0, 'end': 14}, expected=(unittest.Region(0, 12), 'a', True), msg='find tag with attributes'),  # noqa: E501
+    test_data(content='<a\nhey="ho">foo', args={'pattern': RX_ANY_TAG_NAMED_TPL.format('a'), 'start': 0, 'end': 14}, expected=(unittest.Region(0, 12), 'a', True), msg='find tag with attributes'),  # noqa: E501
 )
 
 TESTS_NEXT_UNBALANCED_END_TAG = (
@@ -52,7 +56,7 @@ TESTS_NEXT_UNBALANCED_END_TAG = (
 TESTS_CONTAINING_TAG = (
     test_data(content='<a>foo</a>', args={'start': 4}, expected=(unittest.Region(0, 3), unittest.Region(6, 10), 'a'), msg='find tag'),  # noqa: E501
     test_data(content='<div>foo</div>', args={'start': 5}, expected=(unittest.Region(0, 5), unittest.Region(8, 14), 'div'), msg='find long tag'),  # noqa: E501
-    test_data(content='<div class="foo">foo</div>', args={'start': 17}, expected=(unittest.Region(0, 17), unittest.Region(20, 26), 'div'), msg='find tag with attributes'),  # noqa: E501
+    test_data(content='<div\nclass="foo">foo</div>', args={'start': 17}, expected=(unittest.Region(0, 17), unittest.Region(20, 26), 'div'), msg='find tag with attributes'),  # noqa: E501
     test_data(content='<div>foo</div>', args={'start': 2}, expected=(unittest.Region(0, 5), unittest.Region(8, 14), 'div'), msg='find tag from within start tag'),  # noqa: E501
     test_data(content='<div>foo</div>', args={'start': 13}, expected=(unittest.Region(0, 5), unittest.Region(8, 14), 'div'), msg='find tag from within end tag'),  # noqa: E501
     test_data(content='<div>foo <p>bar</p></div>', args={'start': 12}, expected=(unittest.Region(9, 12), unittest.Region(15, 19), 'p'), msg='find nested tag from inside'),  # noqa: E501
